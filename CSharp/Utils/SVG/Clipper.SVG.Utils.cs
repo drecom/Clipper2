@@ -8,7 +8,7 @@
 
 using System.IO;
 
-namespace Clipper2Lib
+namespace Drecom.Clipper2Lib
 {
 
   public static class SvgUtils

@@ -16,7 +16,7 @@ using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using System.Runtime.ConstrainedExecution;
 
-namespace Clipper2Lib
+namespace Drecom.Clipper2Lib
 {
 
   // Vertex: a pre-clipping data structure. It is used to separate polygons

@@ -4,7 +4,7 @@ using BenchmarkDotNet.Attributes;
 using BenchmarkDotNet.Configs;
 using BenchmarkDotNet.Jobs;
 
-namespace Clipper2Lib.Benchmark
+namespace Drecom.Clipper2Lib.Benchmark
 {
   public class FastConfig : ManualConfig
     {

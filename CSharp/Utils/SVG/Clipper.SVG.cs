@@ -11,7 +11,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 
-namespace Clipper2Lib
+namespace Drecom.Clipper2Lib
 {
   public class SimpleSvgWriter
   {
