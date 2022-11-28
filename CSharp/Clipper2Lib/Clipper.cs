@@ -17,7 +17,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Runtime.CompilerServices;
 
-namespace Clipper2Lib
+namespace Drecom.Clipper2Lib
 {
 
   // PRE-COMPILER CONDITIONAL ...

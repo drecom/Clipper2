@@ -14,7 +14,7 @@ using System.Linq;
 using System.Net;
 using System.Net.NetworkInformation;
 
-namespace Clipper2Lib
+namespace Drecom.Clipper2Lib
 {
     public class RectClip
   {

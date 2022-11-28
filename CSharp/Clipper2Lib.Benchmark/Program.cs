@@ -1,6 +1,6 @@
 using BenchmarkDotNet.Running;
 
-namespace Clipper2Lib.Benchmark
+namespace Drecom.Clipper2Lib.Benchmark
 {
     public class Program
     {        

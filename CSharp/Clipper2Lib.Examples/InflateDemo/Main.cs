@@ -9,7 +9,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Reflection;
-using Clipper2Lib;
+using Drecom.Clipper2Lib;
 
 namespace ClipperDemo1
 {

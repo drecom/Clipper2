@@ -11,7 +11,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace Clipper2Lib
+namespace Drecom.Clipper2Lib
 {
   public class Minkowski
   {
