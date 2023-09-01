@@ -9,10 +9,14 @@
 using System.Collections.Generic;
 using System.Reflection;
 using System.IO;
+<<<<<<< HEAD
 using Clipper2Lib;
 using System;
 using System.Security.Cryptography;
 using System.Xml.Linq;
+=======
+using Drecom.Clipper2Lib;
+>>>>>>> develop
 
 namespace ClipperDemo1
 {

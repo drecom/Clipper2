@@ -13,7 +13,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.CompilerServices;
 
-namespace Clipper2Lib
+namespace Drecom.Clipper2Lib
 {
   public class OutPt2
   {

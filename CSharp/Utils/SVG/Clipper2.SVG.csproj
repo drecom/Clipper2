@@ -1,8 +1,12 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
+<<<<<<< HEAD
     <TargetFramework>netstandard2.0</TargetFramework>
     <Platforms>AnyCPU;x86</Platforms>
+=======
+    <TargetFramework>net6.0</TargetFramework>
+>>>>>>> develop
   </PropertyGroup>
 
   <ItemGroup>

@@ -14,7 +14,7 @@ using System.Runtime.CompilerServices;
 using System.Security.Cryptography;
 using System.Threading;
 
-namespace Clipper2Lib
+namespace Drecom.Clipper2Lib
 {
   public struct Point64
   {

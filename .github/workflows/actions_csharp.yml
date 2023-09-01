@@ -1,14 +1,17 @@
 name: C#
 on:
   push:
+    branches: ["main", "drecom/develop"]
   pull_request:
+    branches: ["main", "drecom/develop"]
 jobs:
-  windows-latest:
-    runs-on: 'windows-latest'
+  build:
+    runs-on: "ubuntu-latest"
     defaults:
       run:
         working-directory: ./CSharp
     steps:
+<<<<<<< HEAD
     - uses: actions/checkout@v2
     - name: Copy Clipper2Lib to USINGZ directory
       run: cp Clipper2Lib/*.cs USINGZ/
@@ -22,3 +25,20 @@ jobs:
       run: dotnet build --configuration Release --no-restore
     - name: Run Tests
       run: dotnet test --no-restore --verbosity normal
+=======
+      - uses: actions/checkout@v3
+      - name: Copy Clipper2Lib to USINGZ directory
+        run: cp Clipper2Lib/*.cs USINGZ/
+      - name: Setup .NET Core
+        uses: actions/setup-dotnet@v3
+        with:
+          dotnet-version: |
+            3.1.x
+            6.0.x
+      - name: Restore
+        run: dotnet restore
+      - name: Build
+        run: dotnet build --configuration Release --no-restore
+      - name: Test
+        run: dotnet test --no-restore --verbosity normal
+>>>>>>> develop
