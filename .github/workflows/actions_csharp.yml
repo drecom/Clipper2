@@ -11,21 +11,6 @@ jobs:
       run:
         working-directory: ./CSharp
     steps:
-<<<<<<< HEAD
-    - uses: actions/checkout@v2
-    - name: Copy Clipper2Lib to USINGZ directory
-      run: cp Clipper2Lib/*.cs USINGZ/
-    - name: Setup .NET Core
-      uses: actions/setup-dotnet@v1
-      with: 
-        dotnet-version: '6.0.x'
-    - name: Install Dependencies
-      run: dotnet restore
-    - name: Build Solution
-      run: dotnet build --configuration Release --no-restore
-    - name: Run Tests
-      run: dotnet test --no-restore --verbosity normal
-=======
       - uses: actions/checkout@v3
       - name: Copy Clipper2Lib to USINGZ directory
         run: cp Clipper2Lib/*.cs USINGZ/
@@ -41,4 +26,3 @@ jobs:
         run: dotnet build --configuration Release --no-restore
       - name: Test
         run: dotnet test --no-restore --verbosity normal
->>>>>>> develop

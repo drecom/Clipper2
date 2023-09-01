@@ -10,12 +10,8 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Reflection;
-<<<<<<< HEAD
 using System.Runtime.CompilerServices;
-using Clipper2Lib;
-=======
 using Drecom.Clipper2Lib;
->>>>>>> develop
 
 namespace ClipperDemo1
 {
