@@ -10,7 +10,7 @@ using System;
 using System.IO;
 using System.Runtime.InteropServices;
 
-namespace Clipper2Lib
+namespace Drecom.Clipper2Lib
 {
 
   public static class Colors

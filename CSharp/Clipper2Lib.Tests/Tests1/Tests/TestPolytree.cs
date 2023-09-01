@@ -1,6 +1,6 @@
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-namespace Clipper2Lib.UnitTests
+namespace Drecom.Clipper2Lib.UnitTests
 {
 
   [TestClass]
