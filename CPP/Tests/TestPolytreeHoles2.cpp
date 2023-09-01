@@ -15,14 +15,14 @@ void PolyPathContainsPoint(const PolyPath64& pp, const Point64 pt, int& counter)
       else  ++counter;
     }
   }
-  for (auto child : pp)
+  for (const auto& child : pp)
     PolyPathContainsPoint(*child, pt, counter);
 }
 
 bool PolytreeContainsPoint(const PolyPath64& pp, const Point64 pt)
 {
   int counter = 0;
-  for (auto child : pp)
+  for (const auto& child : pp)
     PolyPathContainsPoint(*child, pt, counter);
   EXPECT_GE(counter, 0); //ie 'pt' can't be inside more holes than outers
   return counter != 0;
@@ -31,14 +31,14 @@ bool PolytreeContainsPoint(const PolyPath64& pp, const Point64 pt)
 void GetPolyPathArea(const PolyPath64& pp, double& area)
 {
   area += Area(pp.Polygon());
-  for (auto child : pp)
+  for (const auto& child : pp)
     GetPolyPathArea(*child, area);
 }
 
 double GetPolytreeArea(const PolyPath64& pp)
 {
   double result = 0;
-  for (auto child : pp)
+  for (const auto& child : pp)
     GetPolyPathArea(*child, result);
   return result;
 }
@@ -113,7 +113,7 @@ TEST(Clipper2Tests, TestPolytreeHoles2)
   // 1a. check solution_paths_area  is smaller than subject_area
   EXPECT_LT(solution_paths_area, subject_area);
   // 1b. but not too much smaller
-  EXPECT_GT(solution_paths_area, (subject_area * 0.95)); 
+  EXPECT_GT(solution_paths_area, (subject_area * 0.92)); 
 
   // 2. check solution_tree's area matches solution_paths' area
   EXPECT_NEAR(solution_tree_area, solution_paths_area, 0.0001);

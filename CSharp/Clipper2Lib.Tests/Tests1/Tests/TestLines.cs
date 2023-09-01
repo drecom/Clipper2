@@ -1,6 +1,6 @@
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-namespace Clipper2Lib.UnitTests
+namespace Drecom.Clipper2Lib.UnitTests
 {
 
   [TestClass]
@@ -29,7 +29,7 @@ namespace Clipper2Lib.UnitTests
         if (area > 0)
         {
           double area2 = Clipper.Area(solution);
-          double a = area2 / area2;
+          double a = area / area2;
           Assert.IsTrue(a > 0.995 && a < 1.005,
             string.Format("Incorrect area in test {0}", i));
         }

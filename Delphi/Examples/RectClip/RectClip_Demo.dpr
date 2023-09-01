@@ -8,10 +8,13 @@ uses
   Windows,
   ShellAPI,
   SysUtils,
-  Clipper in '..\..\Clipper2Lib\Clipper.pas',
-  Clipper.Core in '..\..\Clipper2Lib\Clipper.Core.pas',
   Clipper.SVG in '..\..\Utils\Clipper.SVG.pas',
-  Timer in '..\..\Utils\Timer.pas',
+  Clipper.Core in '..\..\Clipper2Lib\Clipper.Core.pas',
+  Clipper.Engine in '..\..\Clipper2Lib\Clipper.Engine.pas',
+  Clipper.Minkowski in '..\..\Clipper2Lib\Clipper.Minkowski.pas',
+  Clipper.Offset in '..\..\Clipper2Lib\Clipper.Offset.pas',
+  Clipper.RectClip in '..\..\Clipper2Lib\Clipper.RectClip.pas',
+  Clipper in '..\..\Clipper2Lib\Clipper.pas',
   ClipMisc in '..\..\Utils\ClipMisc.pas';
 
 const
@@ -28,7 +31,7 @@ const
     margin: integer = 100;
   begin
     SetLength(clp, 1);
-    clp[0] := Clipper.Core.Ellipse(Rect64(0, 0, radius, radius));
+    clp[0] := ClipMisc.Ellipse(Rect64(0, 0, radius, radius));
     SetLength(sub, count);
     for i := 0 to count -1 do
       sub[i] := TranslatePath(clp[0],
@@ -36,10 +39,10 @@ const
 
     rec := Rect64(margin, margin, width - margin, height - margin);
     clp[0] := rec.AsPath;
-    sol := RectClip(rec, sub);
+    sol := ExecuteRectClip(rec, sub);
 
     //display
-    with TSimpleClipperSvgWriter.Create(fillrule) do
+    with TSvgWriter.Create(fillrule) do
     try
       AddPaths(sub, false, $100066FF, $400066FF, 1);
       AddPaths(clp, false, $10FFAA00, $FFFF0000, 1);
@@ -63,10 +66,10 @@ const
     clp[0] := rec.AsPath;
     SetLength(sub, 1);
     sub[0] := PathD(MakeRandomPath(width, height, count));
-    sol := RectClip(rec, sub);
+    sol := ExecuteRectClip(rec, sub);
 
     //display
-    with TSimpleClipperSvgWriter.Create(fillrule) do
+    with TSvgWriter.Create(fillrule) do
     try
       AddPaths(sub, false, $100066FF, $400066FF, 1);
       AddPaths(clp, false, $10FFAA00, $FFFF0000, 1);
@@ -92,10 +95,10 @@ const
     SetLength(sub, 1);
     sub[0] := MakeRandomPathD(width, height, lineLength);
 
-    sol := RectClipLines(rec, sub);
+    sol := ExecuteRectClipLines(rec, sub);
 
     //display
-    with TSimpleClipperSvgWriter.Create(fillrule) do
+    with TSvgWriter.Create(fillrule) do
     try
       AddPaths(sub, true, $0, $AA0066FF, 1);
       //AddPaths(sub, false, $100066FF, $400066FF, 1);
