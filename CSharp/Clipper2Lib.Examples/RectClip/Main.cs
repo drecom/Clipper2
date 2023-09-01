@@ -9,7 +9,7 @@
 using System;
 using System.IO;
 using System.Reflection.Metadata.Ecma335;
-using Clipper2Lib;
+using Drecom.Clipper2Lib;
 
 namespace ClipperDemo1
 {
