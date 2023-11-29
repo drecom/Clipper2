@@ -1,8 +1,10 @@
 cmake_minimum_required(VERSION 3.15)
-project(Clipper2 VERSION 1.2.2 LANGUAGES C CXX)
+project(Clipper2 VERSION 1.3.0 LANGUAGES C CXX)
 
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
-set(CMAKE_CXX_STANDARD 17)
+if(NOT DEFINED CMAKE_CXX_STANDARD OR CMAKE_CXX_STANDARD LESS 17)
+    set(CMAKE_CXX_STANDARD 17)
+endif()
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)
@@ -11,19 +13,29 @@ option(CLIPPER2_UTILS "Build utilities" ON)
 option(CLIPPER2_EXAMPLES "Build examples" ON)
 option(CLIPPER2_TESTS "Build tests" ON)
 option(USE_EXTERNAL_GTEST "Use system-wide installed GoogleTest" OFF)
+option(USE_EXTERNAL_GBENCHMARK "Use the googlebenchmark" OFF) 
 option(BUILD_SHARED_LIBS "Build shared libs" OFF)
 set(CLIPPER2_USINGZ "ON" CACHE STRING "Build Clipper2Z, either \"ON\" or \"OFF\" or \"ONLY\"")
+set(CLIPPER2_MAX_PRECISION 8 CACHE STRING "Maximum precision allowed for double to int64 scaling")
+
+if (APPLE)
+    set(CMAKE_SHARED_LIBRARY_SUFFIX ".dylib")
+endif ()
 
 include(GNUInstallDirs)
 
+set(CLIPPER2_INC_FOLDER ${PROJECT_SOURCE_DIR}/Clipper2Lib/include/clipper2)
+configure_file(clipper.version.in ${CLIPPER2_INC_FOLDER}/clipper.version.h)
+
 set(CLIPPER2_INC
-  Clipper2Lib/include/clipper2/clipper.h
-  Clipper2Lib/include/clipper2/clipper.core.h
-  Clipper2Lib/include/clipper2/clipper.engine.h
-  Clipper2Lib/include/clipper2/clipper.export.h
-  Clipper2Lib/include/clipper2/clipper.minkowski.h
-  Clipper2Lib/include/clipper2/clipper.offset.h
-  Clipper2Lib/include/clipper2/clipper.rectclip.h
+  ${CLIPPER2_INC_FOLDER}/clipper.h
+  ${CLIPPER2_INC_FOLDER}/clipper.version.h
+  ${CLIPPER2_INC_FOLDER}/clipper.core.h
+  ${CLIPPER2_INC_FOLDER}/clipper.engine.h
+  ${CLIPPER2_INC_FOLDER}/clipper.export.h
+  ${CLIPPER2_INC_FOLDER}/clipper.minkowski.h
+  ${CLIPPER2_INC_FOLDER}/clipper.offset.h
+  ${CLIPPER2_INC_FOLDER}/clipper.rectclip.h
 )
 
 set(CLIPPER2_SRC
@@ -34,10 +46,15 @@ set(CLIPPER2_SRC
 
 set(CLIPPER2_LIBS "") # one or both of Clipper2/Clipper2Z
 
-# 2d version of Clipper2
+# primary Clipper2 library
 if (NOT (CLIPPER2_USINGZ STREQUAL "ONLY"))
   list(APPEND CLIPPER2_LIBS Clipper2)
   add_library(Clipper2 ${CLIPPER2_INC} ${CLIPPER2_SRC})
+
+  target_compile_definitions(
+    Clipper2
+    PUBLIC CLIPPER2_MAX_PRECISION=${CLIPPER2_MAX_PRECISION}
+  )
 
   target_include_directories(Clipper2
     PUBLIC Clipper2Lib/include
@@ -51,12 +68,15 @@ if (NOT (CLIPPER2_USINGZ STREQUAL "ONLY"))
   endif()
 endif()
 
-# Clipper2 but with USINGZ defined
+# secondary Clipper2 library with USINGZ defined (if required)
 if (NOT (CLIPPER2_USINGZ STREQUAL "OFF"))
   list(APPEND CLIPPER2_LIBS Clipper2Z)
   add_library(Clipper2Z ${CLIPPER2_INC} ${CLIPPER2_SRC})
 
-  target_compile_definitions(Clipper2Z PUBLIC USINGZ)
+  target_compile_definitions(
+    Clipper2Z 
+    PUBLIC USINGZ CLIPPER2_MAX_PRECISION=${CLIPPER2_MAX_PRECISION}
+  )  
 
   target_include_directories(Clipper2Z
     PUBLIC Clipper2Lib/include
@@ -83,6 +103,7 @@ if(CLIPPER2_UTILS OR CLIPPER2_TESTS OR CLIPPER2_EXAMPLES)
     Utils/ClipFileSave.h
     Utils/Timer.h
     Utils/Colors.h
+    Utils/CommonUtils.h
   )
   set(CLIPPER2_UTILS_SRC
     Utils/clipper.svg.cpp
@@ -135,6 +156,7 @@ if(CLIPPER2_EXAMPLES)
       UnionClipping
       RectClipping
       SimpleClipping
+      VariableOffset
     )
 
     foreach(ex ${EXAMPLES})
@@ -180,19 +202,20 @@ else()
   set_target_properties(gtest gtest_main PROPERTIES FOLDER GTest)
 endif()
   set(ClipperTests_SRC
+    Tests/TestExportHeaders.cpp
     Tests/TestLines.cpp
     Tests/TestOffsets.cpp
     Tests/TestOffsetOrientation.cpp
     Tests/TestOrientation.cpp
     Tests/TestPolygons.cpp
-    Tests/TestPolytreeHoles1.cpp
-    Tests/TestPolytreeHoles2.cpp
-    Tests/TestPolytreeHoles3.cpp
+    Tests/TestPolytreeHoles.cpp
     Tests/TestPolytreeIntersection.cpp
     Tests/TestPolytreeUnion.cpp
     Tests/TestRandomPaths.cpp
     Tests/TestRectClip.cpp
+    Tests/TestSimplifyPath.cpp
     Tests/TestTrimCollinear.cpp
+    Tests/TestWindows.cpp
   )
 
   set(CLIPPER2_TESTS "") # one or both of ClipperTests/ClipperTestsZ
@@ -203,7 +226,7 @@ endif()
     target_link_libraries(ClipperTests gtest gtest_main Clipper2 Clipper2utils)
 
     gtest_discover_tests(ClipperTests
-      # set a working directory so your project root so that you can find test data via paths relative to the project root
+      # set a working directory to your project root so that you can find test data via paths relative to the project root
       WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}/../Tests
       PROPERTIES VS_DEBUGGER_WORKING_DIRECTORY "${PROJECT_DIR}"
     )
@@ -234,6 +257,10 @@ endif()
   file(COPY ../Tests/PolytreeHoleOwner2.txt DESTINATION ${CMAKE_BINARY_DIR} FILE_PERMISSIONS OWNER_READ GROUP_READ WORLD_READ )
   file(COPY ../Tests/Lines.txt DESTINATION ${CMAKE_BINARY_DIR} FILE_PERMISSIONS OWNER_READ GROUP_READ WORLD_READ )
   file(COPY ../Tests/Polygons.txt DESTINATION ${CMAKE_BINARY_DIR} FILE_PERMISSIONS OWNER_READ GROUP_READ WORLD_READ )
+endif()
+
+if(USE_EXTERNAL_GBENCHMARK)
+  add_subdirectory(BenchMark)
 endif()
 
 set(CLIPPER2_PCFILES "")

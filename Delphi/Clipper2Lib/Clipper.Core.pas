@@ -2,7 +2,7 @@ unit Clipper.Core;
 
 (*******************************************************************************
 * Author    :  Angus Johnson                                                   *
-* Date      :  19 February 2023                                                *
+* Date      :  5 November 2023                                                 *
 * Website   :  http://www.angusj.com                                           *
 * Copyright :  Angus Johnson 2010-2023                                         *
 * Purpose   :  Core Clipper Library module                                     *
@@ -64,6 +64,7 @@ type
     function GetWidth: Int64; {$IFDEF INLINING} inline; {$ENDIF}
     function GetHeight: Int64; {$IFDEF INLINING} inline; {$ENDIF}
     function GetIsEmpty: Boolean; {$IFDEF INLINING} inline; {$ENDIF}
+    function GetIsValid: Boolean; {$IFDEF INLINING} inline; {$ENDIF}
     function GetMidPoint: TPoint64; {$IFDEF INLINING} inline; {$ENDIF}
   public
     Left   : Int64;
@@ -78,6 +79,7 @@ type
     property Width: Int64 read GetWidth;
     property Height: Int64 read GetHeight;
     property IsEmpty: Boolean read GetIsEmpty;
+    property IsValid: Boolean read GetIsValid;
     property MidPoint: TPoint64 read GetMidPoint;
   end;
 
@@ -86,6 +88,7 @@ type
     function GetWidth: double; {$IFDEF INLINING} inline; {$ENDIF}
     function GetHeight: double; {$IFDEF INLINING} inline; {$ENDIF}
     function GetIsEmpty: Boolean; {$IFDEF INLINING} inline; {$ENDIF}
+    function GetIsValid: Boolean; {$IFDEF INLINING} inline; {$ENDIF}
     function GetMidPoint: TPointD; {$IFDEF INLINING} inline; {$ENDIF}
   public
     Left   : double;
@@ -99,6 +102,7 @@ type
     property Width: double read GetWidth;
     property Height: double read GetHeight;
     property IsEmpty: Boolean read GetIsEmpty;
+    property IsValid: Boolean read GetIsValid;
     property MidPoint: TPointD read GetMidPoint;
   end;
 
@@ -120,6 +124,7 @@ type
   protected
     function UnsafeGet(idx: integer): Pointer; // no range checking
     procedure UnsafeSet(idx: integer; val: Pointer);
+    procedure UnsafeDelete(index: integer); virtual;
   public
     constructor Create(capacity: integer = 0); virtual;
     destructor Destroy; override;
@@ -334,6 +339,7 @@ procedure CheckPrecisionRange(var precision: integer);
 
 const
   MaxInt64    = 9223372036854775807;
+  MinInt64    = -MaxInt64;
   MaxCoord    = MaxInt64 div 4;
   MinCoord    = - MaxCoord;
   invalid64   = MaxInt64;
@@ -345,7 +351,15 @@ const
   InvalidPtD :  TPointD = (X: invalidD; Y: invalidD);
 
   NullRectD   : TRectD = (left: 0; top: 0; right: 0; Bottom: 0);
+  InvalidRect64 : TRect64 =
+    (left: invalid64; top: invalid64; right: invalid64; bottom: invalid64);
+  InvalidRectD : TRectD =
+    (left: invalidD; top: invalidD; right: invalidD; bottom: invalidD);
+
   Tolerance   : Double = 1.0E-12;
+
+  //https://github.com/AngusJohnson/Clipper2/discussions/564
+  MaxDecimalPrecision = 8;
 
 implementation
 
@@ -371,6 +385,12 @@ end;
 function TRect64.GetIsEmpty: Boolean;
 begin
   result := (bottom <= top) or (right <= left);
+end;
+//------------------------------------------------------------------------------
+
+function TRect64.GetIsValid: Boolean;
+begin
+  result := left <> invalid64;
 end;
 //------------------------------------------------------------------------------
 
@@ -443,6 +463,12 @@ end;
 function TRectD.GetIsEmpty: Boolean;
 begin
   result := (bottom <= top) or (right <= left);
+end;
+//------------------------------------------------------------------------------
+
+function TRectD.GetIsValid: Boolean;
+begin
+  result := left <> invalidD;
 end;
 //------------------------------------------------------------------------------
 
@@ -608,6 +634,14 @@ begin
 end;
 //------------------------------------------------------------------------------
 
+procedure TListEx.UnsafeDelete(index: integer);
+begin
+  dec(fCount);
+  if index < fCount then
+    Move(fList[index +1], fList[index], (fCount - index) * SizeOf(Pointer));
+end;
+//------------------------------------------------------------------------------
+
 procedure TListEx.Swap(idx1, idx2: integer);
 var
   p: Pointer;
@@ -623,7 +657,7 @@ end;
 
 procedure CheckPrecisionRange(var precision: integer);
 begin
-  if (precision < -8) or (precision > 8) then
+  if (precision < -MaxDecimalPrecision) or (precision > MaxDecimalPrecision) then
       Raise EClipper2LibException(rsClipper_PrecisonErr);
 end;
 //------------------------------------------------------------------------------
@@ -1922,19 +1956,10 @@ begin
 end;
 //------------------------------------------------------------------------------
 
-function CheckCastInt64(val: double): Int64; {$IFDEF INLINE} inline; {$ENDIF}
-begin
-  if (val >= MaxCoord) or (val <= MinCoord) then
-    Raise EClipper2LibException.Create('overflow error.');
-  Result := Trunc(val);
-  //Result := __Trunc(val);
-end;
-//------------------------------------------------------------------------------
-
 function GetIntersectPoint(const ln1a, ln1b, ln2a, ln2b: TPoint64;
   out ip: TPoint64): Boolean;
 var
-  dx1,dy1, dx2,dy2, qx,qy, cp: double;
+  dx1,dy1, dx2,dy2, t, cp: double;
 begin
   // https://en.wikipedia.org/wiki/Line%E2%80%93line_intersection
   dy1 := (ln1b.y - ln1a.y);
@@ -1942,16 +1967,13 @@ begin
   dy2 := (ln2b.y - ln2a.y);
   dx2 := (ln2b.x - ln2a.x);
   cp  := dy1 * dx2 - dy2 * dx1;
-  if (cp = 0.0) then
-  begin
-    Result := false;
-    Exit;
-  end;
-  qx := dx1 * ln1a.y - dy1 * ln1a.x;
-  qy := dx2 * ln2a.y - dy2 * ln2a.x;
-  ip.X := CheckCastInt64((dx1 * qy - dx2 * qx) / cp);
-  ip.Y := CheckCastInt64((dy1 * qy - dy2 * qx) / cp);
-  Result := (ip.x <> invalid64) and (ip.y <> invalid64);
+  Result := (cp <> 0.0);
+  if not Result then Exit;
+  t := ((ln1a.x-ln2a.x) * dy2 - (ln1a.y-ln2a.y) * dx2) / cp;
+  if t <= 0.0 then ip := ln1a
+  else if t >= 1.0 then ip := ln1b;
+  ip.X :=  Trunc(ln1a.X + t * dx1);
+  ip.Y :=  Trunc(ln1a.Y + t * dy1);
 end;
 //------------------------------------------------------------------------------
 
