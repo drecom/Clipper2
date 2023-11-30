@@ -1,0 +1,153 @@
+name: C++
+on:
+  push:
+    branches: ["main", "drecom/develop"]
+  pull_request:
+    branches: ["main", "drecom/develop"]
+jobs:
+  windows-latest:
+    runs-on: 'windows-latest'
+    steps:
+    - uses: actions/checkout@v4
+    - name: Add MSBuild to PATH
+      uses: microsoft/setup-msbuild@v1.3.1
+    - uses: actions/setup-node@v4
+      with:
+        node-version: '20'
+    - name: msbuild version
+      run: msbuild --version
+    - name: Get GoogleTest
+      run: git submodule update --init     
+    - name: Build
+      run: |
+        mkdir CPP/build
+        cd CPP/build
+        cmake .. -DBUILD_SHARED_LIBS=ON
+        cmake --build . --config Release --target Clipper2
+    - name: Archive production artifacts
+      uses: actions/upload-artifact@v3
+      with:
+        name: windows
+        path: CPP/build/Release/Clipper2.dll
+  macos-latest:
+    runs-on: 'macos-latest'
+    steps:
+    - uses: actions/checkout@v4
+    - uses: actions/setup-node@v4
+      with:
+        node-version: '20'
+    - name: Xcode version
+      run: xcodebuild -version
+    - name: Get GoogleTest
+      run: git submodule update --init
+    - name: Build
+      run: |
+        mkdir CPP/build
+        cd CPP/build
+        cmake .. -DCMAKE_BUILD_TYPE=Release
+        cmake --build . --config Release --target Clipper2
+    - name: Archive production artifacts
+      uses: actions/upload-artifact@v3
+      with:
+        name: macos
+        path: CPP/build/libClipper2.a
+  ios-latest:
+    runs-on: 'macos-latest'
+    steps:
+    - uses: actions/checkout@v4
+    - uses: actions/setup-node@v4
+      with:
+        node-version: '20'
+    - name: Get GoogleTest
+      run: git submodule update --init
+    - name: Xcode version
+      run: xcodebuild -version
+    - name: Build
+      run: |
+        mkdir CPP/build
+        cd CPP/build
+        cmake .. -G Xcode \
+          -DCMAKE_SYSTEM_NAME=iOS \
+          -DCMAKE_OSX_DEPLOYMENT_TARGET=10.0 \
+          -DCMAKE_OSX_ARCHITECTURES="arm64;x86_64" \
+          -DCMAKE_BUILD_TYPE=Release
+        cmake --build . --config Release --target Clipper2
+    - name: Archive production artifacts
+      uses: actions/upload-artifact@v3
+      with:
+        name: ios
+        path: CPP/build/Release-iphoneos/libClipper2.a
+  android-arm64-v8a-latest:
+    runs-on: 'ubuntu-latest'
+    steps:
+    - uses: actions/checkout@v4
+    - uses: actions/setup-node@v4
+      with:
+        node-version: '20'
+    - name: Get GoogleTest
+      run: git submodule update --init
+    - uses: actions/setup-java@v3
+      with:
+        distribution: 'microsoft'
+        java-version: '17'
+    - name: install ndk
+      uses: nttld/setup-ndk@v1.4
+      with:
+        ndk-version: r26b
+    - name: install ninja-build
+      run: sudo apt-get install ninja-build
+    - name: Build
+      run: |
+        export CC=/usr/bin/clang
+        export CXX=/usr/bin/clang++
+        mkdir CPP/build
+        cd CPP/build
+        cmake .. -G Ninja \
+          -DCMAKE_TOOLCHAIN_FILE=${ANDROID_NDK_ROOT}/build/cmake/android.toolchain.cmake \
+          -DANDROID_NATIVE_API_LEVEL=24 \
+          -DANDROID_TOOLCHAIN=clang \
+          -DANDROID_ABI=arm64-v8a
+        cmake --build . --config Release --target Clipper2
+        ls
+    - name: Archive production artifacts
+      uses: actions/upload-artifact@v3
+      with:
+        name: android-arm64-v8a
+        path: CPP/build/libClipper2.a
+  armeabi-armeabi-v7a-latest:
+    runs-on: 'ubuntu-latest'
+    steps:
+    - uses: actions/checkout@v4
+    - uses: actions/setup-node@v4
+      with:
+        node-version: '20'
+    - name: Get GoogleTest
+      run: git submodule update --init
+    - uses: actions/setup-java@v3
+      with:
+        distribution: 'microsoft'
+        java-version: '17'
+    - name: install ndk
+      uses: nttld/setup-ndk@v1.4
+      with:
+        ndk-version: r26b
+    - name: install ninja-build
+      run: sudo apt-get install ninja-build
+    - name: Build
+      run: |
+        export CC=/usr/bin/clang
+        export CXX=/usr/bin/clang++
+        mkdir CPP/build
+        cd CPP/build
+        cmake .. -G Ninja \
+          -DCMAKE_TOOLCHAIN_FILE=${ANDROID_NDK_ROOT}/build/cmake/android.toolchain.cmake \
+          -DANDROID_NATIVE_API_LEVEL=24 \
+          -DANDROID_TOOLCHAIN=clang \
+          -DANDROID_ABI=armeabi-v7a
+        cmake --build . --config Release --target Clipper2
+        ls
+    - name: Archive production artifacts
+      uses: actions/upload-artifact@v3
+      with:
+        name: android-armeabi-v7a
+        path: CPP/build/libClipper2.a
