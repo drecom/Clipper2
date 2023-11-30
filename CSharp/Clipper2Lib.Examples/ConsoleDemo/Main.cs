@@ -1,4 +1,4 @@
-﻿/*******************************************************************************
+/*******************************************************************************
 * Author    :  Angus Johnson                                                   *
 * Date      :  1 January 2023                                                  *
 * Website   :  http://www.angusj.com                                           *
@@ -6,7 +6,6 @@
 * License   :  http://www.boost.org/LICENSE_1_0.txt                            *
 *******************************************************************************/
 
-using System.Collections.Generic;
 using System.Reflection;
 using System.IO;
 using System;
