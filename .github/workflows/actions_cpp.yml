@@ -1,8 +1,9 @@
 name: C++
 on:
+  push:
+    branches: ["main", "drecom/develop"]
   pull_request:
-    branches-ignore: # Disable C++ build
-      - '**'
+    branches: ["main", "drecom/develop"]
 jobs:
   windows-latest:
     runs-on: 'windows-latest'
