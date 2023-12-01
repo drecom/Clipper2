@@ -22,7 +22,7 @@ jobs:
       run: |
         mkdir CPP/build
         cd CPP/build
-        cmake .. -DBUILD_SHARED_LIBS=ON
+        cmake .. -DBUILD_SHARED_LIBS=ON -DCLIPPER2_USINGZ=OFF
         cmake --build . --config Release --target Clipper2
     - name: Archive production artifacts
       uses: actions/upload-artifact@v3
@@ -44,7 +44,7 @@ jobs:
       run: |
         mkdir CPP/build
         cd CPP/build
-        cmake .. -DCMAKE_BUILD_TYPE=Release
+        cmake .. -DCMAKE_BUILD_TYPE=Release -DCLIPPER2_USINGZ=OFF
         cmake --build . --config Release --target Clipper2
     - name: Archive production artifacts
       uses: actions/upload-artifact@v3
@@ -70,7 +70,8 @@ jobs:
           -DCMAKE_SYSTEM_NAME=iOS \
           -DCMAKE_OSX_DEPLOYMENT_TARGET=10.0 \
           -DCMAKE_OSX_ARCHITECTURES="arm64;x86_64" \
-          -DCMAKE_BUILD_TYPE=Release
+          -DCMAKE_BUILD_TYPE=Release \
+          -DCLIPPER2_USINGZ=OFF
         cmake --build . --config Release --target Clipper2
     - name: Archive production artifacts
       uses: actions/upload-artifact@v3
@@ -106,7 +107,8 @@ jobs:
           -DCMAKE_TOOLCHAIN_FILE=${ANDROID_NDK_ROOT}/build/cmake/android.toolchain.cmake \
           -DANDROID_NATIVE_API_LEVEL=24 \
           -DANDROID_TOOLCHAIN=clang \
-          -DANDROID_ABI=arm64-v8a
+          -DANDROID_ABI=arm64-v8a \
+          -DCLIPPER2_USINGZ=OFF
         cmake --build . --config Release --target Clipper2
         ls
     - name: Archive production artifacts
