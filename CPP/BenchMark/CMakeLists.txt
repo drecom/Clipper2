@@ -15,7 +15,7 @@ message("start fetching the googlebenchmark")
 FetchContent_Declare(googlebenchmark
         GIT_REPOSITORY https://github.com/google/benchmark.git
         GIT_TAG v1.7.1
-) 
+)
 
 FetchContent_MakeAvailable(
         googlebenchmark)
@@ -23,10 +23,42 @@ set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
 message("fetching is done")
 
 set(benchmark_srcs
+    GetIntersectPtBenchmark.cpp
     PointInPolygonBenchmark.cpp
     StripDuplicateBenchmark.cpp
     # more to add
 )
+
+set(CLIPPER2_INC
+  ${CLIPPER2_INC_FOLDER}/clipper.h
+  ${CLIPPER2_INC_FOLDER}/clipper.version.h
+  ${CLIPPER2_INC_FOLDER}/clipper.core.h
+)
+
+add_library(Clipper2_bm INTERFACE)
+target_include_directories(Clipper2_bm INTERFACE CLIPPER2_INC)
+
+set(CLIPPER2_UTILS_INC
+  ../Utils/clipper.svg.h
+  ../Utils/ClipFileLoad.h
+  ../Utils/ClipFileSave.h
+  ../Utils/Timer.h
+  ../Utils/Colors.h
+  ../Utils/CommonUtils.h
+)
+set(CLIPPER2_UTILS_SRC
+  ../Utils/clipper.svg.cpp
+  ../Utils/ClipFileLoad.cpp
+  ../Utils/ClipFileSave.cpp
+)
+set(CLIPPER2_UTILS "")
+  list(APPEND CLIPPER2_UTILS Clipper2utils_bm)
+  add_library(Clipper2utils_bm STATIC ${CLIPPER2_UTILS_INC} ${CLIPPER2_UTILS_SRC})
+  target_include_directories(Clipper2utils_bm
+    PUBLIC ../Clipper2Lib/include
+    PUBLIC ../Utils
+  )
+  target_link_libraries(Clipper2utils_bm PUBLIC Clipper2_bm)
 
 # add each benchmark from the benchmark_srcs
 foreach(benchmark ${benchmark_srcs})
@@ -34,12 +66,15 @@ foreach(benchmark ${benchmark_srcs})
 
     message(STATUS "${PROJECT_NAME} add benchmark ${benchmark_target}")
     add_executable(${benchmark_target} ${benchmark})
+
     target_include_directories(${benchmark_target}
       PUBLIC ../Clipper2Lib/include
-      PUBLIC ../Utils        
+      PUBLIC ../Utils
     )
 
     target_link_libraries(${benchmark_target}
         benchmark::benchmark
+        Clipper2_bm
+        Clipper2utils_bm
     )
 endforeach()
