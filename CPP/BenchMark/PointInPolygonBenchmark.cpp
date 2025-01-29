@@ -28,7 +28,7 @@ private:
 public:
   SetConsoleTextColor(ConsoleTextColor color) : _color(color) {};
 
-  static friend std::ostream& operator<< (std::ostream& out, SetConsoleTextColor const& scc)
+  friend std::ostream& operator<< (std::ostream& out, SetConsoleTextColor const& scc)
   {
     return out << "\x1B[" << scc._color << "m";
   }
@@ -195,7 +195,7 @@ inline PointInPolygonResult PIP2(const Point64& pt, const Path64& polygon)
 }
 
 /////////////////////////////////////////////////////////
-// PIP3: An entirely different algorithm for comparision.
+// PIP3: An entirely different algorithm for comparison.
 // "Optimal Reliable Point-in-Polygon Test and
 // Differential Coding Boolean Operations on Polygons"
 // by Jianqiang Hao et al.
