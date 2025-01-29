@@ -1,9 +1,9 @@
 ﻿/*******************************************************************************
 * Author    :  Angus Johnson                                                   *
 * Date      :  24 March 2024                                                   *
-* Website   :  http://www.angusj.com                                           *
+* Website   :  https://www.angusj.com                                          *
 * Copyright :  Angus Johnson 2010-2024                                         *
-* License   :  http://www.boost.org/LICENSE_1_0.txt                            *
+* License   :  https://www.boost.org/LICENSE_1_0.txt                           *
 *******************************************************************************/
 
 using System;
@@ -207,9 +207,7 @@ namespace Drecom.Clipper2Lib
             if (pt.y < bounds.top) bounds.top = pt.y;
             if (pt.y > bounds.bottom) bounds.bottom = pt.y;
           }
-      if (!IsValidRect(bounds))
-        return RectEmpty;
-      return bounds;
+      return !IsValidRect(bounds) ? RectEmpty : bounds;
     }
 
     private static string ColorToHtml(uint clr)
@@ -281,7 +279,7 @@ namespace Drecom.Clipper2Lib
           writer.Write(string.Format(NumberFormatInfo.InvariantInfo, svg_path_format2,
               ColorToHtml(pi.PenClr), GetAlpha(pi.PenClr), pi.PenWidth));
 
-        if (pi.ShowCoords)
+        if (!pi.ShowCoords) continue;
         {
           writer.Write("<g font-family=\"{0}\" font-size=\"{1}\" fill=\"{2}\">\n", 
             coordStyle.FontName, coordStyle.FontSize, ColorToHtml(coordStyle.FontColor));
